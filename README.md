@@ -1,4 +1,5 @@
 <div align="center">
+
 # BetABoat
 
 ### A betting system used during the 24/7 deep learning stream of @SerpentAI's Game Agent Development Kit
@@ -30,3 +31,8 @@ The point system will be based on various factors. Amount of betters, amount of 
 
 **How can I bet?**
 Betting will be done through the Twitch chat of [SerpentAI](https://twitch.tv/serpent_ai) and follow the syntax of `!bet <type> <prediction>`. For example, to predict the total score of the AI run `!bet totalscore 648`.
+
+---
+
+## Want to Contribute?
+Create a pull request specifying the additions of your contribution. You may create issues and/or assign yourself to issues if you'd like. If you have suggestions or feedback, open an issue.
