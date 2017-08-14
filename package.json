@@ -1,0 +1,25 @@
+{
+  "name": "betaboat",
+  "version": "1.0.0",
+  "description": "Betting System for SerpentAI 24/7 deep learning stream",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/d0p3t/BetABoat.git"
+  },
+  "author": "d0p3t",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/d0p3t/BetABoat/issues"
+  },
+  "homepage": "https://github.com/d0p3t/BetABoat#readme",
+  "dependencies": {
+    "autobahn": "^17.5.2",
+    "tmi.js": "^1.2.1",
+    "ws": "^3.1.0"
+  }
+}
