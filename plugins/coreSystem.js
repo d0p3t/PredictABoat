@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const config = require('../config');
 const Chat = require('./chatSystem');
-//const GameConnector = require('./gameConnector');
+const GameConnector = require('./gameConnector');
 
 
 const Core = module.exports = () => {
@@ -11,6 +11,8 @@ const Core = module.exports = () => {
   db.on('error', (err) => {
     console.log('Error connecting to MongoDB');
   });
+
+  GameConnector();
 
   Chat.connect((callback) => {
     console.log(callback);

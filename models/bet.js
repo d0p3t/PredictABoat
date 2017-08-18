@@ -15,6 +15,10 @@ module.exports.getBetbyRoundId = (round_id, callback) => {
   Bet.find({ round_id: round_id }, callback);
 };
 
+module.exports.getBetForCalc = (round_id, category, callback) => {
+  Bet.find({ round_id: round_id, category: category }, callback);
+};
+
 module.exports.addBet = (newBet, callback) => {
   newBet.save(callback);
 };

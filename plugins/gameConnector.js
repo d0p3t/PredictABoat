@@ -1,17 +1,20 @@
 const autobahn = require('autobahn');
 const config = require('../config');
+const BetRound = require('./bettingSystem');
 
-const gameConnection = new autobahn.Connection({
-    url: 'ws://' + config.wamp.url + config.wamp.port + '/',
-    realm: 'betsystem'
-});
+const GameConnector = module.exports = () => {
+  var connection = new autobahn.Connection({
+      url: 'ws://' + config.wamp.url + ':' + config.wamp.port + '/',
+      realm: config.wamp.realm
+  });
+  connection.onopen = function (session, details) {
+      console.log('WAMP connection is open');
+      // Listen for events here and fire bettingSystem methods whenever needed
+  };
 
-gameConnection.onopen = function (session) {
-    console.log('gameConnection socket is open');
+  connection.onclose = function (reason, details) {
+      console.log('WAMP connection closed (Reason: '+ reason + ')');
+  };
+
+  connection.open();
 };
-
-gameConnection.onclose = function (reason, details) {
-    console.log('gameConnection socket closed');
-};
-
-gameConnection.open();

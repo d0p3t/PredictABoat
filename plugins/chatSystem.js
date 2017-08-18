@@ -5,8 +5,6 @@ const BetRound = require('./bettingSystem');
 
 const Chat = module.exports = {};
 
-//const Bet = require('../models/bet');
-
 const client = new tmi.client(config.tmi);
 
 // Connect to Twitch chat
@@ -59,7 +57,10 @@ Chat.commands = (callback) => {
             betCat = msg[1];
             if(isFinite(betAmount)) {
               // register bet
-              client.say(channel, 'Debug: Register bet of category ' + betCat + ' with value ' + betAmount + '');
+              addNewBet(userstate.username, betAmount, betCat, (callback) => {
+                client.say(channel, callback);
+              });
+              client.say(channel, 'LUL Debug LUL Register bet of category ' + betCat + ' with value ' + betAmount + '');
             }
             else
               client.say(channel, user + 'Oops! Your bet must be a number (i.e \'!bet ' + betCat + ' 32)');
@@ -75,11 +76,6 @@ Chat.commands = (callback) => {
   });
 };
 
-// Add chat command
-Chat.addCommand = (prefix, command, subCommand,) => {
-
-};
-
 // HELPERS Functions
 function addNewBet(username, amount, category, callback) {
   var newBet = { username: username, amount: amount, category: category };
@@ -88,4 +84,4 @@ function addNewBet(username, amount, category, callback) {
       callback('Oops! Something went wrong.');
     callback(chatMsg);
   });
-}
+};

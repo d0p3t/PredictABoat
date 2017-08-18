@@ -3,10 +3,6 @@ const Bet = require('../models/bet');
 const Point = require('../models/point');
 const BetRound = module.exports = {};
 
-
-// ALL OF THE FUNCTIONS IN HERE DEPEND ON THIS GAMECONNECTOR. NEED DATA
-//const gameConnector = require('./gameConnector');
-
 var isOpen = true;
 var round_id = 0;
 // Used to open bets
@@ -16,7 +12,7 @@ BetRound.open = (callback) => {
   isOpen = true;
   round_id += 1;
   if(isOpen)
-    callback('Get your bets in for the next AI Round (#)' + round_id + '. Dont know how? Type !help to find out more. Good luck!');
+    callback('Get your bets in for the next AI Run (#)' + round_id + '. Dont know how? Type !help to find out more. Good luck!');
   else
     callback('Woops! Something went wrong BibleThump'); // unnecessary but an extra check doesnt help. if during stress round it's fine, we can remove it.
 };
@@ -47,7 +43,6 @@ BetRound.calcResults = (callback) => {
     'finalscore': { name: 'd0p3t', exact: false, points: '213' },
     'matches': { name: 'serpent_ai', exact: true, points: '631' }
   };
-  callback(winners);
   // Listen for end of 'AI round' from Game Agent.
   // Once ended => fire BetRound.stop, calculate winners, save results in database, update points
   // and inform chat for winners (in callback?)
@@ -60,6 +55,21 @@ BetRound.calcResults = (callback) => {
   // 4. If found, we got a winner and they get a bonus (so multiplier+bonus)
   // 5. If NOT, we find winner CLOSEST to winning number and give them no bonus
   // 6. Announce winners in chat
+  var finalscoreMultiplier = 0.8;
+  var matchesMultiplier = 1.55;
+  var categories = ['finalscore', 'matches'];
+  BetRound.checkStatus((status, round) => {
+    for (var i = 0; i < categories.length; i++) {
+      Bet.getBetForCalc(round, categories[i], (err, bets) => {
+        // In bets object, find amount thats equal to AI round
+        // If not found search closest.
+        // Multiply amount by multiplier for category
+        // Insert winners with amount and whether it was exact prediction or not into winners object
+      });
+    };
+    callback(winners); // Set callback to winners to do with it what we want
+  });
+
 };
 
 // Used to check Bet Round anywhere in BetABoat
@@ -69,12 +79,20 @@ BetRound.checkStatus = (callback) => {
 
 // Used to enter user to bet
 BetRound.enter = (bet, callback) => {
-  // Call this when a viewer puts in a valid bet command (in chatSystem).
-  // Check if bets are currently open
-  // Check whether viewer has already bet for that category this round.
-  // If not, enter the bet into the database.
   BetRound.checkStatus((openStatus, round ) => {
     if(openStatus) {
+      // Check if user has bet before, if not create points document
+      Point.getByUsername(bet.username, (err, userPoints) => {
+        if(err) throw err;
+        if(!userPoints) {
+          var newPoints = new Point({
+            user: bet.username
+          });
+          Point.newPoint(newPoints, (err, createdPoints) => {
+            if(err) throw err;
+          });
+        }
+      });
       Bet.getBetbyRoundIdAndCategory(bet.username, round, bet.category, (err, userFound) => {
         if(err)
           callback(err, null);
@@ -88,12 +106,13 @@ BetRound.enter = (bet, callback) => {
             category: bet.category,
             amount: bet.amount,
             created_at: Date.now()
-          })
+          });
           Bet.addBet(newUser, (err, isSaved) => {
             if(err) throw err;
             if(!isSaved)
               callback(null, 'Something went wrong. Try again!');
           });
+          // this is for debug. REMOVE AT PRODUCTION
           callback(null, '@' + bet.username + ', you successfully entered in Round ' + round + ' with the bet <' + bet.category + '> <' + bet.amount + '>.');
         }
       });
@@ -101,6 +120,5 @@ BetRound.enter = (bet, callback) => {
     else {
       callback(null, 'Bets are closed for round #' + round +'! There\'s always a next round :)');
     }
-  })
-
+  });
 };
