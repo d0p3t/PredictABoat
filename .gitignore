@@ -58,4 +58,4 @@ typings/
 .env
 
 # Custom ignores
-config.json
+config.js
