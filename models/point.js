@@ -3,9 +3,10 @@ const mongoose = require('mongoose');
 const PointSchema = mongoose.Schema({
   user: {type: String, required: true , unique: true },
   points: {
-    finalscore: { type: Number, required: true, default: 0 },
-    matches: { type: Number, required: true, default: 0 },
+    finalscore: { type: Number, default: 0 },
+    matches: { type: Number, default: 0 },
   },
+  total_points: { type: Number, required: true, default: 0 },
   created_at: { type: Date, required: true, default: Date.now },
   updated_at: { type: Date, required: true, default: Date.now }
 });
@@ -18,8 +19,8 @@ module.exports.getByUsername = (username, callback) => {
 };
 
 // for updating points fields
-module.exports.updatePoint = (updatedPoint, callback) => {
-  updatedPoint.save(callback);
+module.exports.updatePoint = (username, updatedData, callback) => {
+  Point.findOneAndUpdate( { user: username }, updatedData, { upsert: true }, callback);
 };
 
 // on first bet ever create document for user

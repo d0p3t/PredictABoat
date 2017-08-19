@@ -12,7 +12,7 @@ const Core = module.exports = () => {
     console.log('Error connecting to MongoDB');
   });
 
-  GameConnector();
+  //GameConnector();
 
   Chat.connect((callback) => {
     console.log(callback);

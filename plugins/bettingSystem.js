@@ -17,7 +17,7 @@ BetRound.open = (callback) => {
     callback('Woops! Something went wrong BibleThump'); // unnecessary but an extra check doesnt help. if during stress round it's fine, we can remove it.
 };
 
-// Used to close bets
+// Used to announce closed entries and round starting
 BetRound.close = (callback) => {
   // Close bets one round before AI round
   isOpen = false;
@@ -29,7 +29,7 @@ BetRound.close = (callback) => {
 
 };
 
-// Used to stop entries in the bet
+// Used to say round has stopped
 BetRound.stop = (callback) => {
   // AI Round has ended. Used to tell viewers winners are being calculated.
   isOpen = false; // for safety?!
@@ -37,12 +37,9 @@ BetRound.stop = (callback) => {
 };
 
 // Used to calculate and save results
-BetRound.calcResults = (callback) => {
+BetRound.calcResults = (data, callback) => {
   // debug data
-  winners = {
-    'finalscore': { name: 'd0p3t', exact: false, points: '213' },
-    'matches': { name: 'serpent_ai', exact: true, points: '631' }
-  };
+  winners = {};
   // Listen for end of 'AI round' from Game Agent.
   // Once ended => fire BetRound.stop, calculate winners, save results in database, update points
   // and inform chat for winners (in callback?)
@@ -55,21 +52,57 @@ BetRound.calcResults = (callback) => {
   // 4. If found, we got a winner and they get a bonus (so multiplier+bonus)
   // 5. If NOT, we find winner CLOSEST to winning number and give them no bonus
   // 6. Announce winners in chat
-  var finalscoreMultiplier = 0.8;
-  var matchesMultiplier = 1.55;
-  var categories = ['finalscore', 'matches'];
+  var categories = {
+    'finalscore': { multiplier: '0.8'},
+    'matches': { multiplier: '1.55'}
+  };
   BetRound.checkStatus((status, round) => {
     for (var i = 0; i < categories.length; i++) {
       Bet.getBetForCalc(round, categories[i], (err, bets) => {
         // In bets object, find amount thats equal to AI round
-        // If not found search closest.
-        // Multiply amount by multiplier for category
-        // Insert winners with amount and whether it was exact prediction or not into winners object
+        for (var x = 0; x < bets.length; x++) {
+          if(bets[x]['amount'] === data[i]['amount']) {
+            winners[categories[i]]['user'] = bets[x]['user'];
+            winners[categories[i]]['points'] = (bets[x]['amount'] * categories[i]['multiplier']) * 1.15;
+            winners[categories[i]]['exact'] = 'EXACT PogChamp';
+            break;
+          }
+          else {
+            var diff = data[i]['amount'] - bets[x]['amount'];
+            if(x !== 0)
+              var diff2 = data[i]['amount'] - bets[x-1]['amount'];
+            else
+              var diff2 = 0;
+            if(diff < diff2) {
+              winners[categories[i]]['user'] = bets[x]['user'];
+              winners[categories[i]]['points'] = (bets[x]['amount'] * categories[i]['multiplier']);
+              winners[categories[i]]['exact'] = '';
+            }
+          }
+        };
+      });
+      Point.getByUsername(winners[categories[i]]['user'], (err, user) => {
+        if(err) throw err;
+        if(!user)
+          console.log('User not found! Something went wrong');
+        else {
+          var currentCategory = categories[i];
+          var updatedCategoryPoints = user.points[categories[i]] + winners[categories[i]]['points'];
+          var updatedTotalPoints = user.total_points + winners[categories[i]]['points'];
+          var updatedData = new Point({
+            points: {  currentCategory : updatedCategoryPoints },
+            total_points: updatedTotalPoints,
+            updated_at: Date.now()
+          });
+          Point.updatePoint(winners[categories[i]]['user'], updatedData, (err, done) => {
+            if(err) throw err;
+          });
+        }
       });
     };
-    callback(winners); // Set callback to winners to do with it what we want
   });
-
+  // Save winners data in the database
+  callback('MrDestructoid ATTENTION We got some winners! MrDestructoid [finalscore] - ' + winners[categories[i]]['exact'] + winners['finalscore']['user'] + '(' + winners['finalscore']['points'] + ') [matches] - ' + winners['matches']['user'] + '(' + winners['matches']['points'] + ')');
 };
 
 // Used to check Bet Round anywhere in BetABoat
