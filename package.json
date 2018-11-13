@@ -19,7 +19,7 @@
   "homepage": "https://github.com/d0p3t/BetABoat#readme",
   "dependencies": {
     "autobahn": "^18.10.2",
-    "mongoose": "^4.11.7",
+    "mongoose": "^5.3.12",
     "tmi.js": "^1.2.1"
   },
   "devDependencies": {
